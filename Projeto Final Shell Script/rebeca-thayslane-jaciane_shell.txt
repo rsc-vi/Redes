@@ -1,0 +1,107 @@
+﻿#!/bin/bash
+
+
+# Função para acompanhar a entrega
+#Se o usuário optar por um reembolso, exibe uma mensagem informando que o #reembolso foi solicitado. Se não, sugere que o usuário acompanhe novamente mais #tarde ou entre em contato para mais informações.
+
+
+acompanhar_entrega() {
+    dialog --inputbox "Digite o ID do produto para acompanhar a entrega:" 8 40 2>tempfile
+    id_produto=$(cat tempfile)
+    rm -f tempfile
+
+
+    # Lógica para confirmar a entrega ou informar sobre a não entrega
+    dialog --yesno "O produto com ID $id_produto foi entregue?" 8 40
+    resposta=$?
+
+
+    if [ $resposta -eq 0 ]; then
+        dialog --msgbox "Entrega confirmada para o produto com ID $id_produto." 8 40
+    else
+        dialog --yesno "Deseja solicitar um reembolso para o produto com ID $id_produto?" 8 40
+        resposta_reembolso=$?
+
+
+        if [ $resposta_reembolso -eq 0 ]; then
+            dialog --msgbox "Reembolso solicitado para o produto com ID $id_produto." 8 40
+            # Lógica para solicitar reembolso
+        else
+            dialog --msgbox "Acompanhe novamente mais tarde ou entre em contato para mais informações." 8 40
+        fi
+    fi
+}
+
+
+# Função para solicitar aumento de prazo ou prioridade de entrega
+
+
+#Solicita o ID do produto.
+#Apresenta um menu com opções para aumentar o prazo de entrega, solicitar #prioridade de entrega ou cancelar.
+#Com base na escolha do usuário, realiza a ação correspondente e exibe uma #mensagem.
+
+
+ajustar_entrega() {
+    dialog --inputbox "Digite o ID do produto para ajustar a entrega:" 8 40 2>tempfile
+    id_produto=$(cat tempfile)
+    rm -f tempfile
+
+
+    # Lógica para oferecer opções de ajuste
+    dialog --menu "Escolha uma opção:" 10 40 3 1 "Aumentar prazo de entrega" 2 "Solicitar prioridade de entrega" 3 "Cancelar" 2>tempfile
+
+
+    opcao=$(cat tempfile)
+    rm -f tempfile
+
+
+    case $opcao in
+        1)
+            dialog --msgbox "Prazo de entrega aumentado para o produto com ID $id_produto." 8 40
+            # Lógica para aumentar prazo de entrega
+            ;;
+        2)
+            dialog --msgbox "Prioridade de entrega solicitada para o produto com ID $id_produto." 8 40
+            # Lógica para solicitar prioridade de entrega
+            ;;
+        3)
+            dialog --msgbox "Operação cancelada." 8 40
+            ;;
+        *)
+            dialog --msgbox "Opção inválida." 8 40
+            ;;
+    esac
+}
+
+
+# Menu principal
+#Essa parte do código é responsável por determinar qual ação tomar com base na 
+#escolha do usuário. Cada número no menu tem uma ação associada, e o bloco *
+#atua como um caso padrão para lidar com escolhas inválidas.  Essa
+#estrutura é eficaz para organizar o fluxo de controle com base nas decisões do #usuário
+
+
+while true; do
+    dialog --menu "Escolha uma opção:" 12 40 5 1 "Acompanhar entrega" 2 "Solicitar ajuste de entrega" 3 "Sair" 2>tempfile
+
+
+    escolha=$(cat tempfile)
+    rm -f tempfile
+
+
+    case $escolha in
+        1)
+            acompanhar_entrega
+            ;;
+        2)
+            ajustar_entrega
+            ;;
+        3)
+            dialog --msgbox "Saindo do script. Até mais!" 8 40
+            exit 0
+            ;;
+        *)
+            dialog --msgbox "Opção inválida." 8 40
+            ;;
+    esac
+done
